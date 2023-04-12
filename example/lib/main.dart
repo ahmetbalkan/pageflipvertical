@@ -27,7 +27,7 @@ class _MyHomePageState extends State<MyHomePage> {
       VerticalFlipPageTurnController();
   double? _initialVerticalDrag;
   double? _currentVerticalDrag;
-  bool? _visible;
+  bool _visible = false;
   late int currentPage;
   late List<Widget> list;
 
@@ -59,10 +59,17 @@ class _MyHomePageState extends State<MyHomePage> {
         if (currentPage == list.length - 1 && details.primaryDelta! < 0) {
           return;
         }
+
+        // Add this condition to check if moving to next or previous page is allowed
+        if ((currentPage == 0 && details.primaryDelta! > 0) ||
+            (currentPage == list.length - 1 && details.primaryDelta! < 0)) {
+          return;
+        }
+
         _currentVerticalDrag = details.localPosition.dy;
         double dragDistance = _currentVerticalDrag! - _initialVerticalDrag!;
         double dragPercentage =
-            dragDistance / MediaQuery.of(context).size.height;
+            (dragDistance / MediaQuery.of(context).size.height) * 0.5;
         _pageTurnController.updatePosition(dragPercentage);
       },
       onVerticalDragEnd: (details) {
@@ -90,7 +97,6 @@ class _MyHomePageState extends State<MyHomePage> {
           }
         }
         if (currentPage < 0) {
-          currentPage = 0;
         } else if (currentPage > list.length - 1) {
           currentPage = list.length - 1;
         }
@@ -103,15 +109,12 @@ class _MyHomePageState extends State<MyHomePage> {
       },
       child: Stack(
         children: [
-          list[currentPage],
-          Visibility(
-            visible: _visible ?? false,
-            child: VerticalFlipPageTurn(
-              children: list,
-              cellSize: MediaQuery.of(context).size,
-              controller: _pageTurnController,
-            ),
+          VerticalFlipPageTurn(
+            children: list,
+            cellSize: MediaQuery.of(context).size,
+            controller: _pageTurnController,
           ),
+          Visibility(visible: !_visible, child: list[currentPage]),
         ],
       ),
     );
