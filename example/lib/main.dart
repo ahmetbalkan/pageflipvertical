@@ -27,14 +27,38 @@ class _MyHomePageState extends State<MyHomePage> {
       VerticalFlipPageTurnController();
   double? _initialVerticalDrag;
   double? _currentVerticalDrag;
+  bool? _visible;
+  late int currentPage;
+  late List<Widget> list;
+
+  @override
+  void initState() {
+    super.initState();
+
+    currentPage = 0;
+    list = [
+      Container(color: Colors.red, child: Center(child: Text('1'))),
+      Container(color: Colors.green, child: Center(child: Text('2'))),
+      Container(color: Colors.blue, child: Center(child: Text('3'))),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onVerticalDragStart: (details) {
+        setState(() {
+          _visible = true;
+        });
         _initialVerticalDrag = details.localPosition.dy;
       },
       onVerticalDragUpdate: (details) {
+        if (currentPage == 0 && details.primaryDelta! > 0) {
+          return;
+        }
+        if (currentPage == list.length - 1 && details.primaryDelta! < 0) {
+          return;
+        }
         _currentVerticalDrag = details.localPosition.dy;
         double dragDistance = _currentVerticalDrag! - _initialVerticalDrag!;
         double dragPercentage =
@@ -42,20 +66,53 @@ class _MyHomePageState extends State<MyHomePage> {
         _pageTurnController.updatePosition(dragPercentage);
       },
       onVerticalDragEnd: (details) {
+        setState(() {
+          _visible = false;
+        });
+
         if (details.primaryVelocity! > 0) {
-          _pageTurnController.animToTopWidget();
+          if (currentPage > 0) {
+            setState(() {
+              currentPage--;
+            });
+            _pageTurnController.animToTopWidget();
+          }
         } else {
-          _pageTurnController.animToBottomWidget();
+          if (currentPage < list.length - 1) {
+            setState(() {
+              currentPage++;
+            });
+            _pageTurnController.animToBottomWidget();
+          } else {
+            setState(() {
+              currentPage = list.length - 1;
+            });
+          }
         }
+        if (currentPage < 0) {
+          currentPage = 0;
+        } else if (currentPage > list.length - 1) {
+          currentPage = list.length - 1;
+        }
+
+        _pageTurnController.updatePageCallback!(currentPage);
+        _pageTurnController.currentPage = currentPage;
+        _pageTurnController.updatePageCallback!(currentPage);
+
+        print(currentPage);
       },
-      child: VerticalFlipPageTurn(
+      child: Stack(
         children: [
-          Container(color: Colors.red, child: Center(child: Text('1'))),
-          Container(color: Colors.green, child: Center(child: Text('2'))),
-          Container(color: Colors.blue, child: Center(child: Text('3'))),
+          list[currentPage],
+          Visibility(
+            visible: _visible ?? false,
+            child: VerticalFlipPageTurn(
+              children: list,
+              cellSize: MediaQuery.of(context).size,
+              controller: _pageTurnController,
+            ),
+          ),
         ],
-        cellSize: MediaQuery.of(context).size,
-        controller: _pageTurnController,
       ),
     );
   }

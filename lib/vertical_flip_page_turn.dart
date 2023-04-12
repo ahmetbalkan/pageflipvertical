@@ -43,6 +43,16 @@ class VerticalFlipPageTurnState extends State<VerticalFlipPageTurn>
       }
     };
 
+    widget.controller.updatePageCallback = (int page) {
+      setState(() {
+        position = page;
+        _animationController.value = position / (widget.children.length - 1);
+      });
+    };
+
+    // Add this line to set the initial position
+    position = widget.controller.currentPage;
+
     widget.controller._toBottomCallback = (duration) {
       if (position < widget.children.length - 1) {
         position = position + 1;
@@ -253,6 +263,10 @@ class VerticalFlipPageTurnController {
   ValueChanged<Duration>? _toBottomCallback;
   void Function(double)? _updatePositionCallback;
 
+  void Function(int)? _updatePageCallback;
+  void Function(int)? get updatePageCallback => _updatePageCallback;
+  int currentPage = 0;
+
   void animToTopWidget(
       {Duration duration = const Duration(milliseconds: 350)}) {
     if (_toTopCallback != null) {
@@ -271,6 +285,10 @@ class VerticalFlipPageTurnController {
     if (_updatePositionCallback != null) {
       _updatePositionCallback!(-percentage);
     }
+  }
+
+  set updatePageCallback(void Function(int)? callback) {
+    _updatePageCallback = callback;
   }
 
   set updatePositionCallback(void Function(double)? callback) {
