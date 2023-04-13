@@ -100,6 +100,7 @@ class VerticalFlipPageTurnState extends State<VerticalFlipPageTurn>
           height: cellHeight,
           child: Stack(
             children: <Widget>[
+              //geçiş yaptığındaki üst kısım
               Offstage(
                 offstage: !(angle >= pi / 2),
                 child: Container(
@@ -117,6 +118,7 @@ class VerticalFlipPageTurnState extends State<VerticalFlipPageTurn>
                   ),
                 ),
               ),
+              //alt kısım
               Offstage(
                 offstage: angle == 0,
                 child: Align(
@@ -138,6 +140,7 @@ class VerticalFlipPageTurnState extends State<VerticalFlipPageTurn>
                   ),
                 ),
               ),
+              //ğüs
               Offstage(
                 offstage: !(angle >= pi / 2),
                 child: Transform(
@@ -268,14 +271,14 @@ class VerticalFlipPageTurnController {
   int currentPage = 0;
 
   void animToTopWidget(
-      {Duration duration = const Duration(milliseconds: 350)}) {
+      {Duration duration = const Duration(milliseconds: 1000)}) {
     if (_toTopCallback != null) {
       _toTopCallback!(duration);
     }
   }
 
   void animToBottomWidget(
-      {Duration duration = const Duration(milliseconds: 350)}) {
+      {Duration duration = const Duration(milliseconds: 1000)}) {
     if (_toBottomCallback != null) {
       _toBottomCallback!(duration);
     }

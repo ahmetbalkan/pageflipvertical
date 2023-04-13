@@ -38,6 +38,12 @@
       "languageVersion": "2.12"
     },
     {
+      "name": "flip_board",
+      "rootUri": "file:///C:/Users/hexaf/AppData/Local/Pub/Cache/hosted/pub.dev/flip_board-0.6.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "flutter",
       "rootUri": "file:///C:/src/flutter/packages/flutter",
       "packageUri": "lib/",
@@ -134,7 +140,7 @@
       "languageVersion": "2.12"
     }
   ],
-  "generated": "2023-04-12T11:11:11.366747Z",
+  "generated": "2023-04-13T08:58:52.787033Z",
   "generator": "pub",
   "generatorVersion": "2.19.6"
 }

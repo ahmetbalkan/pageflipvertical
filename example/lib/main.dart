@@ -10,19 +10,18 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(title: Text('Vertical Flip PageView')),
-        body: MyHomePage(),
+        body: FlipWidget(),
       ),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class FlipWidget extends StatefulWidget {
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _FlipWidgetState createState() => _FlipWidgetState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _FlipWidgetState extends State<FlipWidget> {
   final VerticalFlipPageTurnController _pageTurnController =
       VerticalFlipPageTurnController();
   double? _initialVerticalDrag;
@@ -45,77 +44,86 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onVerticalDragStart: (details) {
-        setState(() {
-          _visible = true;
-        });
-        _initialVerticalDrag = details.localPosition.dy;
-      },
-      onVerticalDragUpdate: (details) {
-        if (currentPage == 0 && details.primaryDelta! > 0) {
-          return;
-        }
-        if (currentPage == list.length - 1 && details.primaryDelta! < 0) {
-          return;
-        }
-
-        // Add this condition to check if moving to next or previous page is allowed
-        if ((currentPage == 0 && details.primaryDelta! > 0) ||
-            (currentPage == list.length - 1 && details.primaryDelta! < 0)) {
-          return;
-        }
-
-        _currentVerticalDrag = details.localPosition.dy;
-        double dragDistance = _currentVerticalDrag! - _initialVerticalDrag!;
-        double dragPercentage =
-            (dragDistance / MediaQuery.of(context).size.height) * 0.5;
-        _pageTurnController.updatePosition(dragPercentage);
-      },
-      onVerticalDragEnd: (details) {
-        setState(() {
-          _visible = false;
-        });
-
-        if (details.primaryVelocity! > 0) {
-          if (currentPage > 0) {
-            setState(() {
-              currentPage--;
-            });
-            _pageTurnController.animToTopWidget();
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      body: GestureDetector(
+        onVerticalDragStart: (details) {
+          setState(() {
+            _visible = true;
+          });
+          _initialVerticalDrag = details.localPosition.dy;
+        },
+        onVerticalDragUpdate: (details) {
+          if (currentPage == 0 && details.primaryDelta! > 0) {
+            return;
           }
-        } else {
-          if (currentPage < list.length - 1) {
-            setState(() {
-              currentPage++;
-            });
-            _pageTurnController.animToBottomWidget();
+          if (currentPage == list.length - 1 && details.primaryDelta! < 0) {
+            return;
+          }
+
+          // Add this condition to check if moving to next or previous page is allowed
+          if ((currentPage == 0 && details.primaryDelta! > 0) ||
+              (currentPage == list.length - 1 && details.primaryDelta! < 0)) {
+            return;
+          }
+
+          _currentVerticalDrag = details.localPosition.dy;
+          double dragDistance = _currentVerticalDrag! - _initialVerticalDrag!;
+          double dragPercentage =
+              (dragDistance / MediaQuery.of(context).size.height) * 0.5;
+          _pageTurnController.updatePosition(dragPercentage);
+        },
+        onVerticalDragEnd: (details) {
+          setState(() {
+            _visible = false;
+          });
+
+          double threshold = 0.1;
+
+          if (details.primaryVelocity! > 0) {
+            if (currentPage > 0) {
+              setState(() {
+                currentPage--;
+              });
+              _pageTurnController.animToTopWidget();
+            }
           } else {
-            setState(() {
-              currentPage = list.length - 1;
-            });
+            if (_currentVerticalDrag! - _initialVerticalDrag! <= -threshold &&
+                currentPage < list.length - 1) {
+              setState(() {
+                currentPage++;
+              });
+              _pageTurnController.animToBottomWidget();
+            } else {
+              setState(() {
+                currentPage = list.length - 1;
+              });
+            }
           }
-        }
-        if (currentPage < 0) {
-        } else if (currentPage > list.length - 1) {
-          currentPage = list.length - 1;
-        }
+          if (currentPage < 0) {
+          } else if (currentPage > list.length - 1) {
+            currentPage = list.length - 1;
+          }
 
-        _pageTurnController.updatePageCallback!(currentPage);
-        _pageTurnController.currentPage = currentPage;
-        _pageTurnController.updatePageCallback!(currentPage);
+          _pageTurnController.updatePageCallback!(currentPage);
+          _pageTurnController.currentPage = currentPage;
+          _pageTurnController.updatePageCallback!(currentPage);
 
-        print(currentPage);
-      },
-      child: Stack(
-        children: [
-          VerticalFlipPageTurn(
-            children: list,
-            cellSize: MediaQuery.of(context).size,
-            controller: _pageTurnController,
+          print(currentPage);
+        },
+        child: SingleChildScrollView(
+          physics: NeverScrollableScrollPhysics(),
+          child: Column(
+            children: [
+              VerticalFlipPageTurn(
+                children: list,
+                cellSize: MediaQuery.of(context).size,
+                controller: _pageTurnController,
+              ),
+              Visibility(visible: !_visible, child: list[currentPage]),
+            ],
           ),
-          Visibility(visible: !_visible, child: list[currentPage]),
-        ],
+        ),
       ),
     );
   }
